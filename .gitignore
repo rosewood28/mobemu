@@ -4,3 +4,6 @@ nbproject/
 nbbuild.xml
 /bin/
 .DS_Store
+.idea/
+*.iml
+out/
