@@ -5,12 +5,17 @@
 package mobemu;
 
 import java.util.*;
-import mobemu.algorithms.Epidemic;
+
+import mobemu.algorithms.*;
 import mobemu.node.Message;
 import mobemu.node.Node;
 import mobemu.node.Stats;
+import mobemu.parsers.GeoLife;
+import mobemu.parsers.Haggle;
+import mobemu.parsers.NCCU;
 import mobemu.parsers.UPB;
 import mobemu.trace.Parser;
+import mobemu.trace.Trace;
 
 /**
  * Main class for MobEmu.
@@ -21,6 +26,7 @@ public class MobEmu {
 
     public static void main(String[] args) {
         Parser parser = new UPB(UPB.UpbTrace.UPB2011);
+        //Parser parser = new Haggle(Haggle.HaggleTrace.INFOCOM2006);
 
         // print some trace statistics
         double duration = (double) (parser.getTraceData().getEndTime() - parser.getTraceData().getStartTime()) / (Parser.MILLIS_PER_MINUTE * 60);
@@ -30,12 +36,34 @@ public class MobEmu {
         System.out.println("Nodes: " + parser.getNodesNumber());
 
         // initialize Epidemic nodes
+//        long seed = 0;
+//        boolean dissemination = false;
+//        Node[] nodes = new Node[parser.getNodesNumber()];
+//        for (int i = 0; i < nodes.length; i++) {
+//            nodes[i] = new Epidemic(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+//                    10000, 100, seed, parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime(), dissemination, false);
+//        }
+
+        // initialize Epidemic nodes
         long seed = 0;
         boolean dissemination = false;
         Node[] nodes = new Node[parser.getNodesNumber()];
         for (int i = 0; i < nodes.length; i++) {
-            nodes[i] = new Epidemic(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
-                    10000, 100, seed, parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime(), dissemination, false);
+//            nodes[i] = new BubbleRap(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+//                    10000, 100, seed, parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime());
+//            nodes[i] = new JDER(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+//                    10000, 100, seed, parser.getTraceData().getStartTime(),
+//                    parser.getTraceData().getEndTime(), 500, true,
+//                    false, false, parser.getTraceData());
+//            nodes[i] = new SPRINT(i, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+//                    10000, 100, seed, parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime(),
+//                    true, nodes, 500);
+//            nodes[i] = new SENSE(i, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+//                    10000, 100, seed, parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime(),
+//                    true, nodes);
+            nodes[i] = new SENSE(i, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+                    10000, 100, seed, parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime(),
+                    true, nodes);
         }
 
         // run the trace
