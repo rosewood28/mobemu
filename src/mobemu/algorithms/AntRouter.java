@@ -1,9 +1,10 @@
 package mobemu.algorithms;
 
-import mobemu.ants.AntMessage;
+
 import mobemu.node.Context;
 import mobemu.node.Message;
 import mobemu.node.Node;
+import mobemu.utils.Ant;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,7 +25,7 @@ public class AntRouter extends Node {
      * If the final destination is not found, the ant returns with the information of the most socially strong
      * encountered nodes that can act as a better relay for the destination.
      */
-    private List<AntMessage> antMemory;
+    private List<Ant.AntMessage> antMemory;
 
     /**
      * Instantiates a {@code AntRouter} object.
@@ -46,8 +47,6 @@ public class AntRouter extends Node {
         if (AntRouter.antMemorySize == null) {
             AntRouter.antMemorySize = antMemorySize;
         }
-
-        this.antMemory = new ArrayList<>(Collections.nCopies(antMemorySize, new AntMessage(-1,-1)));
     }
 
     @Override
@@ -100,20 +99,20 @@ public class AntRouter extends Node {
 
     }
 
-    @Override
-    protected boolean insertMessage(Message message, Node from, long currentTime, boolean altruism, boolean dissemination) {
-        if (message instanceof AntMessage) {
-            // Store Ant Messages in antMemory (separately from normal messages)
-            if (!antMemory.contains(message)) {
-                antMemory.add((AntMessage) message);
-            }
-
-            // Return successful storage and don't include ant in the rest of statistics mobemu computes for normal messages
-            return true;
-        }
-
-        // Normal messages are still tracked by mobemu
-        return super.insertMessage(message, from, currentTime, altruism, dissemination);
-
-    }
+//    @Override
+//    protected boolean insertMessage(Message message, Node from, long currentTime, boolean altruism, boolean dissemination) {
+//        if (message instanceof AntMessage) {
+//            // Store Ant Messages in antMemory (separately from normal messages)
+//            if (!antMemory.contains(message)) {
+//                antMemory.add((AntMessage) message);
+//            }
+//
+//            // Return successful storage and don't include ant in the rest of statistics mobemu computes for normal messages
+//            return true;
+//        }
+//
+//        // Normal messages are still tracked by mobemu
+//        return super.insertMessage(message, from, currentTime, altruism, dissemination);
+//
+//    }
 }

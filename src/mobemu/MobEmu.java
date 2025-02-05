@@ -61,9 +61,12 @@ public class MobEmu {
 //            nodes[i] = new SENSE(i, parser.getContextData().get(i), parser.getSocialNetwork()[i],
 //                    10000, 100, seed, parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime(),
 //                    true, nodes);
-            nodes[i] = new SENSE(i, parser.getContextData().get(i), parser.getSocialNetwork()[i],
-                    10000, 100, seed, parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime(),
-                    true, nodes);
+//            nodes[i] = new SENSE(i, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+//                    10000, 100, seed, parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime(),
+//                    true, nodes);
+
+            nodes[i] = new ACO(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+                    10000, 100, seed, parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime());
         }
 
         // run the trace
