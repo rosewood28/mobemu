@@ -4,6 +4,7 @@ package mobemu.utils;
 import mobemu.node.Message;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -34,6 +35,22 @@ public class Ant {
             this.antId = antId;
             this.destination = destination;
             info = new AntMessageInfo(antId, messageId, source, destination);
+        }
+
+        public int getAntId() {
+            return antId;
+        }
+
+        public AntMessageInfo getInfo() {
+            return info;
+        }
+
+        public void setAntId(int antId) {
+            this.antId = antId;
+        }
+
+        public void setInfo(AntMessageInfo info) {
+            this.info = info;
         }
     }
 
@@ -138,11 +155,44 @@ public class Ant {
             path.add(node);
         }
 
-        /**
-         * Mark this ant as having reached its destination.
-         */
-        public void reachedDestination() {
-            reachedDestination = true;
+        public int getDestination() {
+            return destination;
+        }
+
+        public boolean isBackwardAnt() {
+            return isBackwardAnt;
+        }
+
+        public boolean isReachedDestination() {
+            return reachedDestination;
+        }
+
+        public List<Integer> getBestRelays() {
+            return bestRelays;
+        }
+
+        public void setBackwardAnt(boolean backwardAnt) {
+            isBackwardAnt = backwardAnt;
+        }
+
+        public void setDestination(int destination) {
+            this.destination = destination;
+        }
+
+        public void setMessageId(int messageId) {
+            this.messageId = messageId;
+        }
+
+        public void setPath(List<Integer> path) {
+            this.path = path;
+        }
+
+        public void setReachedDestination(boolean reachedDestination) {
+            this.reachedDestination = reachedDestination;
+        }
+
+        public void setBestRelays(List<Integer> bestRelays) {
+            this.bestRelays = bestRelays;
         }
     }
 }
