@@ -154,6 +154,8 @@ public class ASRRA extends Node {
         return message;
     }
 
+    // to be able to process logic that happens even if current contacts are not disrupted can
+    // override th run method of a node
     @Override
     public void run(Node encounteredNode, long tick, long contactDuration, boolean newContact, long timeDelta, long sampleTime) {
         super.run(encounteredNode, tick, contactDuration, newContact, timeDelta, sampleTime);
