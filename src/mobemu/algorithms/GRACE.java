@@ -70,7 +70,7 @@ public class GRACE extends Node {
     public Message generateMessage(Message message) {
 
         // Create ant
-        GraceHelper.Ant ant = new GraceHelper.Ant(this.getId(), message.getDestination(), message.getId(), message.getTimestamp(), 100, 1);
+        GraceHelper.Ant ant = new GraceHelper.Ant(message.getId(), message.getDestination(), message.getId(), message.getTimestamp(), 100, 1, 1);
 
         // Add ant in antMemory for future spreading in the network
         antMemory.add(ant);
@@ -125,13 +125,12 @@ public class GRACE extends Node {
             if (encounteredNode.hasAnt(ant)) continue;
 
             // Forward ant
-
         }
     }
 
     public boolean hasAnt(GraceHelper.Ant otherAnt) {
         for (GraceHelper.Ant ant : antMemory) {
-            if (ant.getSourceId() == otherAnt.getSourceId() && ant.getTimestamp() == otherAnt.getTimestamp()) {
+            if (ant.getSource() == otherAnt.getSource() && ant.getTimestamp() == otherAnt.getTimestamp()) {
                 return true;
             }
         }
