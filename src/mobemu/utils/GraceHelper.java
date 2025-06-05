@@ -7,38 +7,6 @@ import java.util.*;
 public class GraceHelper {
 
     /**
-     * Size of a normal message in a GRACE network used for bandwidth calculations.
-     */
-    public static final int GRACE_MESSAGE_SIZE = 5;
-
-    /**
-     * Size of an ant agent in a GRACE network used for bandwidth calculations.
-     */
-    public static final int GRACE_ANT_SIZE = 1;
-
-    /**
-     * Extension of the standard message class that includes a customizable size field.
-     * This allows distinguishing between regular data messages and lightweight ant agents
-     * based on their conceptual bandwidth usage.
-     */
-    public static class GraceMessage extends Message {
-        private int size = GRACE_MESSAGE_SIZE;
-
-        public GraceMessage(int source, int destination, String message, long timestamp, int copies) {
-            super(source, destination, message, timestamp, copies);
-        }
-
-        /**
-         * Gets the size of the message.
-         *
-         * @return the size of the message
-         */
-        public int getSize() {
-            return size;
-        }
-    }
-
-    /**
      * Ants are lightweight agents that are spread in the network upon message generation
      * in order to update pheromone levels in the nodes.
      * These will travel like messages but are not considered messages since they serve a
@@ -50,6 +18,11 @@ public class GraceHelper {
          * Id of the ant.
          */
         private final int antId;
+
+        /**
+         * Id of the copy of the ant.
+         */
+        private int copyId;
 
         /**
          * Id of the origin node of the ant.
@@ -90,11 +63,6 @@ public class GraceHelper {
         private AntStats antStats;
 
         /**
-         * Fixed size for every ant used for bandwidth calculations.
-         */
-        private final int size = GRACE_ANT_SIZE;
-
-        /**
          * Base for the pheromone strength decay factor.
          */
         private static final double DECAY_FACTOR_BASE = 1000.0;
@@ -105,6 +73,11 @@ public class GraceHelper {
         private static int antCount = 0;
 
         /**
+         * Counter for copies of the ant
+         */
+        private static int copyCount = 0;
+
+        /**
          * Constructor for a {@link Ant} object.
          *
          * @param source          the sender of the message that generated the ant
@@ -112,17 +85,52 @@ public class GraceHelper {
          * @param timestamp       time of the ant generation
          * @param initialTTL      time-to-live of the ant
          * @param initialStrength initial strength of the ant
-         * @param copies          number of initial copies of the ant
          */
-        public Ant(int source, int destination, int messageID, long timestamp, long initialTTL, double initialStrength, int copies) {
+        public Ant(int source, int destination, int messageID, long timestamp, long initialTTL, double initialStrength) {
             this.antId = antCount++;
+            this.copyId = 0;
             this.source = source;
             this.destination = destination;
             this.messageID = messageID;
             this.timestamp = timestamp;
             this.ttl = initialTTL;
             this.strength = initialStrength;
-            this.antStats = new AntStats(copies, source);
+            // Every ant start with one copy and creates a copy only when needed
+            this.antStats = new AntStats(1, source);
+        }
+
+        // Private constructor for cloning
+        private Ant(int antId, int copyId, int source, int destination, int messageID,
+                    long timestamp, long ttl, double strength, AntStats antStats) {
+            this.antId = antId;
+            this.copyId = copyId;
+            this.source = source;
+            this.destination = destination;
+            this.messageID = messageID;
+            this.timestamp = timestamp;
+            this.ttl = ttl;
+            this.strength = strength;
+            this.antStats = antStats;
+        }
+        /**
+         * Clones the ant. Ant stats are also cloned allowing every ant (either generated at
+         * message creation or through cloning) to track its own path without losing the
+         * original ant's history.
+         *
+         * @return the cloned ant
+         */
+        public Ant clone() {
+            return new Ant(
+                    this.antId,
+                    ++copyCount,
+                    this.source,
+                    this.destination,
+                    this.messageID,
+                    this.timestamp,
+                    this.ttl,
+                    this.strength,
+                    this.antStats.clone(this.source)  // Clone the stats of original ant
+            );
         }
 
         /**
@@ -171,7 +179,7 @@ public class GraceHelper {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Ant ant = (Ant) o;
-            return antId == ant.antId;
+            return antId == ant.antId && copyId == ant.copyId;
         }
 
         /**
@@ -181,20 +189,7 @@ public class GraceHelper {
          */
         @Override
         public int hashCode() {
-            return Objects.hash(antId);
-        }
-
-        /**
-         * Clones the ant.
-         *
-         * @return the cloned ant
-         */
-        public Ant clone() {
-            Ant clone = new Ant(this.source, this.destination, this.messageID,
-                    this.timestamp, this.ttl, this.strength,
-                    this.antStats.getCopies(this.source));
-
-            return clone;
+            return Objects.hash(antId, copyId);
         }
 
         /**
@@ -204,6 +199,15 @@ public class GraceHelper {
          */
         public int getAntId() {
             return antId;
+        }
+
+        /**
+         * Gets the id of the copy of the ant.
+         *
+         * @return the id of the copy of the ant
+         */
+        public int getCopyId() {
+            return copyId;
         }
 
         /**
@@ -268,15 +272,6 @@ public class GraceHelper {
          */
         public AntStats getAntStats() {
             return antStats;
-        }
-
-        /**
-         * Gets the size of the ant.
-         *
-         * @return the size of the ant
-         */
-        public int getSize() {
-            return size;
         }
 
     }
@@ -399,6 +394,23 @@ public class GraceHelper {
          */
         public boolean hasVisited(int nodeId) {
             return visited.contains(nodeId);
+        }
+
+        /**
+         * Clones the ant stats.
+         *
+         * @return the cloned ant stats
+         */
+        public AntStats clone(int source) {
+            AntStats clone = new AntStats(1, source);  // Create new base stats
+
+            // Copy all the tracking information
+            clone.hops = new HashMap<>(this.hops);
+            clone.copies = new HashMap<>(this.copies);
+            clone.visited = new HashSet<>(this.visited);
+            clone.visitTime = new HashMap<>(this.visitTime);
+
+            return clone;
         }
 
         /**

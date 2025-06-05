@@ -6,6 +6,7 @@ package mobemu;
 
 import java.util.*;
 import mobemu.algorithms.Epidemic;
+import mobemu.algorithms.GRACE;
 import mobemu.node.Message;
 import mobemu.node.Node;
 import mobemu.node.Stats;
@@ -34,8 +35,12 @@ public class MobEmu {
         boolean dissemination = false;
         Node[] nodes = new Node[parser.getNodesNumber()];
         for (int i = 0; i < nodes.length; i++) {
-            nodes[i] = new Epidemic(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
-                    10000, 100, seed, parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime(), dissemination, false);
+//            nodes[i] = new Epidemic(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+//                    10000, 100, seed, parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime(), dissemination, false);
+
+            nodes[i] = new GRACE(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+                    5000, 10000, 100, seed,
+                    parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime());
         }
 
         // run the trace
