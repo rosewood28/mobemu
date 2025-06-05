@@ -65,7 +65,7 @@ public class GraceHelper {
         /**
          * Base for the pheromone strength decay factor.
          */
-        private static final double DECAY_FACTOR_BASE = 1000.0;
+        private static final double DECAY_FACTOR_BASE = 1000.0 * 60 * 60 * 2;
 
         /**
          * Total number of ants generated.
@@ -144,9 +144,21 @@ public class GraceHelper {
             long elapsed = currentTime - timestamp;
             if (elapsed > this.ttl) return 0.0;
 
+            System.out.println("=== Strength Computation ===");
+            System.out.println("Current time: " + currentTime);
+            System.out.println("Timestamp: " + timestamp);
+            System.out.println("Elapsed: " + elapsed);
+            System.out.println("TTL: " + ttl);
+            System.out.println("Decay factor: " + Math.exp(-elapsed / DECAY_FACTOR_BASE));
+            System.out.println("Initial strength: " + this.strength);
+
             // Exponential decay
             double decayFactor = Math.exp(-elapsed / DECAY_FACTOR_BASE);
-            return this.strength * decayFactor;
+            double finalStrength = this.strength * decayFactor;
+
+
+            System.out.println("Final strength: " + finalStrength);
+            return finalStrength;
         }
 
         /**

@@ -27,7 +27,7 @@ public class GRACE extends Node {
     private static final long ANT_EXCHANGE_INTERVAL = 5000;
 
     // Initial ant TTL
-    private static final long INITIAL_ANT_TTL = 100;
+    private static final long INITIAL_ANT_TTL = 48 * 60 * 60 * 1000; //3 hours
 
     // Initial ant strength
     private static final double INITIAL_ANT_STRENGTH = 1;
@@ -48,7 +48,7 @@ public class GRACE extends Node {
     /**
      * Minimum pheromone value to consider a node as a valid relay in the pheromone table.
      */
-    private static final double MINIMUM_PHEROMONE_THRESHOLD = 0.1;
+    private static final double MINIMUM_PHEROMONE_THRESHOLD = 0.001;
 
     public GRACE(int id, int nodes, Context context, boolean[] socialNetwork, int antMemorySize, int dataMemorySize, int exchangeHistorySize, long seed, long traceStart, long traceEnd) {
         super(id, nodes, context, socialNetwork, dataMemorySize, exchangeHistorySize, seed, traceStart, traceEnd);
@@ -70,14 +70,17 @@ public class GRACE extends Node {
         int remainingMessages = deliverDirectMessages(graceEncounteredNode, false, contactDuration, currentTime, false);
 
         // Convert to bandwidth units (1 message = 5 units, so total capacity = messages * 5)
-        int remainingCapacity = remainingMessages * GRACE_MESSAGE_SIZE;
+        double remainingCapacity = remainingMessages * GRACE_MESSAGE_SIZE;
+        double antCapacity = remainingCapacity * 0.1;
+        remainingCapacity -= antCapacity;
         int usedCapacity = 0;
 
         // First we allow ants to update the available pathways in order to take the best decision based on recent data
         for (GraceHelper.Ant ant : graceEncounteredNode.antMemory) {
+            System.out.println("this is good");
             // Assure that network capacity is not exceeded
-            if (usedCapacity + GRACE_ANT_SIZE > remainingCapacity) {
-                return;
+            if (usedCapacity + GRACE_ANT_SIZE > antCapacity) {
+                break;
             }
 
             // Count successful ant transfers against bandwidth (each ant uses GRACE_ANT_SIZE bandwidth unit)
@@ -85,6 +88,8 @@ public class GRACE extends Node {
                 usedCapacity += GRACE_ANT_SIZE;
             }
         }
+        // Reset used capacity to 0 for messages transfers
+        usedCapacity = 0;
 
         // Analyze messages of the encountered node's data memory and apply algorithm
         for (Message message : graceEncounteredNode.dataMemory) {
@@ -120,6 +125,7 @@ public class GRACE extends Node {
     private boolean insertAnt(GraceHelper.Ant ant, Node from, long currentTime) {
         // Skip if ant is expired
         if (ant.isExpired(currentTime)) {
+            System.out.println("ant is expired lol");
             return false;
         }
 
@@ -139,6 +145,8 @@ public class GRACE extends Node {
         double newStrength = newAnt.computeStrength(currentTime);
         pheromoneTable.put(newAnt.getSource(), currentPheromone + newStrength);
 
+        printPheromoneTable();
+
         // If ant memory is full, remove the oldest ant
         if (antMemorySize != Integer.MAX_VALUE && antMemory.size() >= antMemorySize) {
             antMemory.remove(0);
@@ -154,6 +162,7 @@ public class GRACE extends Node {
         // Get pheromone value for message source
         double pheromoneValue = pheromoneTable.getOrDefault(message.getSource(), 0.0);
 
+        //System.out.println(pheromoneValue);
         // Logic to decide whether to accept the message based on pheromone values.
         return pheromoneValue > 0.1;
     }
@@ -194,7 +203,7 @@ public class GRACE extends Node {
         antMemory.removeIf(ant -> ant.isExpired(currentTime));
 
         // Remove all node entries with pheromone value below the threshold
-        pheromoneTable.entrySet().removeIf(entry -> entry.getValue() < MINIMUM_PHEROMONE_THRESHOLD);
+        //pheromoneTable.entrySet().removeIf(entry -> entry.getValue() < MINIMUM_PHEROMONE_THRESHOLD);
     }
 
     public boolean hasAnt(GraceHelper.Ant otherAnt) {
@@ -205,6 +214,18 @@ public class GRACE extends Node {
         }
 
         return false;
+    }
+
+    public void printPheromoneTable() {
+        if (pheromoneTable.isEmpty()) {
+            System.out.println("Pheromone table is empty.");
+            return;
+        }
+
+        System.out.println("Pheromone Table Contents:");
+        for (Map.Entry<Integer, Double> entry : pheromoneTable.entrySet()) {
+            System.out.println("Key: " + entry.getKey() + ", Value: " + entry.getValue());
+        }
     }
 }
 
