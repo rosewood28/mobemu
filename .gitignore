@@ -1,6 +1,6 @@
-build/
-nbproject/
-/dist/
-nbbuild.xml
+nbbuild.xmlAdd commentMore actions
 /bin/
 .DS_Store
+.idea/
+*.iml
+out/
