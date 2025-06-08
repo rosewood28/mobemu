@@ -19,7 +19,7 @@ public class GRACE extends Node {
     /**
      * Initial ant TTL
      */
-    private static final long INITIAL_ANT_TTL = 24 * 60 * 60 * 1000; //24 hours
+    private static final long INITIAL_ANT_TTL = 24 * 60 * 60 * 1000; //4 hours
 
     /**
      * Initial ant pheromone strength (with what value it will update
@@ -30,12 +30,12 @@ public class GRACE extends Node {
     /**
      * Decay per tick
      */
-    private static final double EVAPORATION_RATE = 0.1;
+    private static final double EVAPORATION_RATE = 0.000001;
 
     /**
      * Minimum pheromone value to consider a node as a valid relay in the pheromone table.
      */
-    private static final double MINIMUM_PHEROMONE_THRESHOLD = 0.3;
+    private static final double MINIMUM_PHEROMONE_THRESHOLD = 0.2;
 
     /**
      * Size in units of a normal message used for bandwidth calculations.
@@ -99,7 +99,7 @@ public class GRACE extends Node {
 
         // Convert remainingMessages to bandwidth units (1 message = GRACE_MESSAGE_SIZE units)
         double remainingCapacity = remainingMessages * GRACE_MESSAGE_SIZE;
-        double antCapacity = remainingCapacity * 0.3;
+        double antCapacity = remainingCapacity * 0.1;
         remainingCapacity -= antCapacity;
         int usedCapacity = 0;
 
@@ -115,6 +115,7 @@ public class GRACE extends Node {
                 usedCapacity += GRACE_ANT_SIZE;
             }
         }
+
         // Reset used capacity to 0 for messages transfers capacity calculations
         usedCapacity = 0;
 
@@ -182,11 +183,11 @@ public class GRACE extends Node {
      * once in order to prevent loops.
      *
      * @param ant the ant to insert in antMemory
-     * @param from the node from which the ant is coming
+     * @param encounteredNode the node from which the ant is coming
      * @param currentTime the current time
      * @return {@code true} if the ant was transfered, {@code false} otherwise
      */
-    private boolean insertAnt(GraceHelper.Ant ant, Node from, long currentTime) {
+    private boolean insertAnt(GraceHelper.Ant ant, Node encounteredNode, long currentTime) {
         // Skip if ant is expired
         if (ant.isExpired(currentTime)) {
             return false;
@@ -205,7 +206,15 @@ public class GRACE extends Node {
 
         // Update pheromone values
         double currentPheromone = pheromoneTable.getOrDefault(newAnt.getSource(), 0.0);
+
         double newStrength = newAnt.computeStrength(currentTime);
+
+        // if ants from the source and the destination reach me
+        // it might mean i am a good relay for messages that travel between them
+        if (this.pheromoneTable.containsKey(newAnt.getDestination())) {
+            newStrength *= 2;
+        }
+
         pheromoneTable.put(newAnt.getSource(), currentPheromone + newStrength);
 
         // If ant memory is full, remove the oldest ant
