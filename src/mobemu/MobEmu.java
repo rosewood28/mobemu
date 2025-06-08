@@ -34,7 +34,7 @@ public class MobEmu {
         long seed = 0;
         boolean dissemination = false;
         Node[] nodes = new Node[parser.getNodesNumber()];
-        int switchvar = 1;
+        int switchvar = 0;
         for (int i = 0; i < nodes.length; i++) {
             if (switchvar == 0) {
                 nodes[i] = new Epidemic(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],

@@ -17,25 +17,39 @@ import java.util.*;
 public class GRACE extends Node {
 
     /**
-     * Initial ant TTL
+     * Initial ant TTL.
      */
-    private static final long INITIAL_ANT_TTL = 24 * 60 * 60 * 1000; //4 hours
+    private static final long INITIAL_ANT_TTL = 24 * 60 * 60 * 1000; //24 hours
+
+    /**
+     * Decay per tick (1000ms for UPB traces). This means the evaporation rate is
+     * very small to account for the fact that the pheromones should last according
+     * to the simulation time in days of UPB traces.
+     */
+    private static final double EVAPORATION_RATE = 0.000002;
+
+    /**
+     * Threshold for accepting messages. Lower than the table cleanup threshold
+     * to allow using paths while they're still viable but maybe weakening.
+     */
+    private static final double MESSAGE_ACCEPTANCE_THRESHOLD = 0.2;
+
+    /**
+     * Minimum pheromone value to consider a node as a valid relay in the pheromone table.
+     * This threshold is used for cleaning up the routing table.
+     */
+    private static final double MINIMUM_PHEROMONE_THRESHOLD = 0.5;
+
+    /**
+     * Ratio of the remaining bandwidth capacity that can be used by ants.
+     */
+    private static final double ANT_CAPACITY_RATIO = 0.2;
 
     /**
      * Initial ant pheromone strength (with what value it will update
      * the pheromone levels in the next node's pheromoneTable)
      */
     private static final double INITIAL_ANT_STRENGTH = 1;
-
-    /**
-     * Decay per tick
-     */
-    private static final double EVAPORATION_RATE = 0.000001;
-
-    /**
-     * Minimum pheromone value to consider a node as a valid relay in the pheromone table.
-     */
-    private static final double MINIMUM_PHEROMONE_THRESHOLD = 0.2;
 
     /**
      * Size in units of a normal message used for bandwidth calculations.
@@ -99,12 +113,15 @@ public class GRACE extends Node {
 
         // Convert remainingMessages to bandwidth units (1 message = GRACE_MESSAGE_SIZE units)
         double remainingCapacity = remainingMessages * GRACE_MESSAGE_SIZE;
-        double antCapacity = remainingCapacity * 0.1;
+        double antCapacity = remainingCapacity * ANT_CAPACITY_RATIO;
         remainingCapacity -= antCapacity;
         int usedCapacity = 0;
 
         // First we allow ants to update the available pathways in order to take the best decision based on recent data
-        for (GraceHelper.Ant ant : graceEncounteredNode.antMemory) {
+        // Create a copy of the ant list to prevent ConcurrentModificationException during iteration since insertAnt()
+        // modifies the original antMemory collection
+        List<GraceHelper.Ant> antsToProcess = new ArrayList<>(graceEncounteredNode.antMemory);
+        for (GraceHelper.Ant ant : antsToProcess) {
             // Assure that network capacity is not exceeded
             if (usedCapacity + GRACE_ANT_SIZE > antCapacity) {
                 break;
@@ -159,15 +176,9 @@ public class GRACE extends Node {
     private boolean shouldAcceptMessage(Message message, Node encounteredNode) {
         // Get pheromone value for message source
         double pheromoneValue = pheromoneTable.getOrDefault(message.getSource(), 0.0);
-        //double pheromoneValueDestination = pheromoneTable.getOrDefault(message.getDestination(), 0.0);
 
-        // if (pheromoneValueDestination > 0.1 || pheromoneValue > 0.1) {
-        //     //System.out.println("Message destination has pheromone value: " + pheromoneValueDestination);
-        //     return true;
-        // }
-
-        // Logic to decide whether to accept the message based on pheromone values.
-        return pheromoneValue > 0.1;
+        // Accept the message or not based on pheromone values.
+        return pheromoneValue > MESSAGE_ACCEPTANCE_THRESHOLD;
     }
 
     /**
@@ -257,6 +268,7 @@ public class GRACE extends Node {
 
     /**
      * Updates the pheromone table and removes expired ants.
+     * This function is called every tick (every 1000ms for UPB traces).
      *
      * @param currentTime the current time
      * @param sampleTime the sample time
@@ -305,3 +317,4 @@ public class GRACE extends Node {
         }
     }
 }
+
