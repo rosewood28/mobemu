@@ -46,6 +46,13 @@ public class GRACE extends Node {
     private static final double ANT_CAPACITY_RATIO = 0.2;
 
     /**
+     * Factor used to reinforce the strength of an ant’s pheromone during
+     * insertAnt() update. This boosts pheromone values of known paths and
+     * encourages stronger gradient formation toward desired destination.
+     */
+    private static final double PHEROMONE_MULTIPLY_FACTOR = 2.0;
+
+    /**
      * Initial ant pheromone strength (with what value it will update
      * the pheromone levels in the next node's pheromoneTable)
      */
@@ -220,10 +227,10 @@ public class GRACE extends Node {
 
         double newStrength = newAnt.computeStrength(currentTime);
 
-        // if ants from the source and the destination reach me
-        // it might mean i am a good relay for messages that travel between them
+        // If ants from both source and destination reach me it might mean
+        // i am a good relay for messages that travel between them
         if (this.pheromoneTable.containsKey(newAnt.getDestination())) {
-            newStrength *= 2;
+            newStrength *= PHEROMONE_MULTIPLY_FACTOR;
         }
 
         pheromoneTable.put(newAnt.getSource(), currentPheromone + newStrength);
@@ -317,4 +324,3 @@ public class GRACE extends Node {
         }
     }
 }
-

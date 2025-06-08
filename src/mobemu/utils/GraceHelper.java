@@ -20,7 +20,7 @@ public class GraceHelper {
     public static class Ant {
 
         /**
-         * Base for the pheromone strength decay factor.
+         * Base for the ant pheromone strength decay factor.
          */
         private static final double DECAY_FACTOR_BASE = 1000.0 * 60 * 60 * 2;
 
