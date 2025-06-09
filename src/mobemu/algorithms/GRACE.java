@@ -211,20 +211,19 @@ public class GRACE extends Node {
             return false;
         }
 
-        // Create a new ant copy for this new path with a new copyId
-        GraceHelper.Ant newAnt = ant.clone();
-
         // If this copy has already visited this node, reject to prevent loops
-        if (newAnt.getAntStats().hasVisited(this.id)) {
+        if (ant.getAntStats().hasVisited(this.id)) {
             return false;
         }
+
+        // Create a new ant copy for this new path with a new copyId
+        GraceHelper.Ant newAnt = ant.clone();
 
         // Mark this node as visited by this copy
         newAnt.getAntStats().markAsVisited(this.id, currentTime);
 
         // Update pheromone values
         double currentPheromone = pheromoneTable.getOrDefault(newAnt.getSource(), 0.0);
-
         double newStrength = newAnt.computeStrength(currentTime);
 
         // If ants from both source and destination reach me it might mean
