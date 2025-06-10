@@ -5,6 +5,8 @@
 package mobemu;
 
 import java.util.*;
+
+import mobemu.algorithms.BubbleRap;
 import mobemu.algorithms.Epidemic;
 import mobemu.algorithms.GRACE;
 import mobemu.node.Message;
@@ -40,9 +42,17 @@ public class MobEmu {
                 nodes[i] = new Epidemic(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
                         5000, 0, seed, parser.getTraceData().getStartTime(),
                         parser.getTraceData().getEndTime(), dissemination, false);
-            } else {
+            } else if (switchvar == 1) {
+                nodes[i] = new BubbleRap(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+                        5000, 0, seed, parser.getTraceData().getStartTime(),
+                        parser.getTraceData().getEndTime());
+            } else if (switchvar == 2) {
                 nodes[i] = new GRACE(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
                         500, 4500, 0, seed,
+                        parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime());
+            } else {
+                nodes[i] = new GRACE(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+                        500, 5000, 0, seed,
                         parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime());
             }
         }
