@@ -5,6 +5,8 @@
 package mobemu;
 
 import java.util.*;
+
+import mobemu.algorithms.BubbleRap;
 import mobemu.algorithms.Epidemic;
 import mobemu.algorithms.GRACE;
 import mobemu.node.Message;
@@ -34,14 +36,23 @@ public class MobEmu {
         long seed = 0;
         boolean dissemination = false;
         Node[] nodes = new Node[parser.getNodesNumber()];
-        int switchvar = 1;
+        int switchvar = 2;
         for (int i = 0; i < nodes.length; i++) {
             if (switchvar == 0) {
                 nodes[i] = new Epidemic(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
-                        5000, 0, seed, parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime(), dissemination, false);
-            } else {
+                        5000, 0, seed, parser.getTraceData().getStartTime(),
+                        parser.getTraceData().getEndTime(), dissemination, false);
+            } else if (switchvar == 1) {
+                nodes[i] = new BubbleRap(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+                        5000, 0, seed, parser.getTraceData().getStartTime(),
+                        parser.getTraceData().getEndTime());
+            } else if (switchvar == 2) {
                 nodes[i] = new GRACE(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
                         500, 4500, 0, seed,
+                        parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime());
+            } else {
+                nodes[i] = new GRACE(i, nodes.length, parser.getContextData().get(i), parser.getSocialNetwork()[i],
+                        500, 5000, 0, seed,
                         parser.getTraceData().getStartTime(), parser.getTraceData().getEndTime());
             }
         }
